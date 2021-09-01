@@ -1,0 +1,20 @@
+
+Name: Sarthak Shrivastava
+
+Local: OS = Debian GNU/LInux 10 Buster version 10 CPU: Intel Core i7-8700K, 2 cores, 3.9 Gb of ram
+
+Remote: CentOS Linux, Intel Xeon Gold 5118 CPU, 24 cores (12 cores per socket), 187 Gb
+
+| Test     | Measured Time | Parallel Speedup |
+|----------|---------------|------------------|
+| Local 1  | 21.086 s      | 1                |
+| Local 4  | 14.265 s      | 1.478            |
+| Local 8  | 11.294 s      | 1.867            |
+| Remote 1 | 14.72 s       | 1                |
+| Remote 4 | 7.85 s        | 1.875            |
+| Remote 8 | 3.61 s        | 4.077            |
+
+As seen above, the more number of processes we add, the faster the sample sort finishes. As seen above, on my local machine, the time taken to complete the sort was 21.086 seconds. As we added more processes, the overall time of completion also sped up, but not by a large factor. This may have been due to the constraints set on my VM. My CPU has 6 cores, of which the VM can only access 2. Meanwhile, on the virtual machine, we see that the parallel speedup increases by a factor of n/2, where n is the number of processes. This is a more substantial increase than the one I saw on my local machine and could be due to the higher availability of cores and processors on the remote server. 
+
+Ahmdahl’s Law states that the maximum speedup tends to be 1/(1-P) for N processors, where P is the proportion of the system that can be made parallel. This would make sense as we can only speed up the parts that get parallelized, in our case that would be the partitioned quicksorts, but the act of putting them into partitions is a task that remains relatively constant. Gustafson’s Law states the same as Ahmdahl’s, except it also accounts that the problem size can be variable and that resources improve, then the time taken to solve larger problems will reduce. Based on these two definitions, I would say that sample sort is a good parallel sorting algorithm. The amount of work done on one processor is the preprocessing of finding the pivot elements. Each branch does O(n) work to select all the elements that need to be sorted and then runs quicksort in each parallel branches. As more branches are added, the amount of work for the sorting decreases by a factor of P, where is P is the number of processes. The amount of pre processing work is roughly O(n) to select pivots, making this sort appear to be very efficient.
+

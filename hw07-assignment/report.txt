@@ -1,0 +1,17 @@
+Name: Sarthak Shrivastava
+
+Local: OS = Debian GNU/LInux 10 Buster version 10 CPU: Intel Core i7-8700K, 2 cores, 3.9 Gb of ram
+
+Remote: CentOS Linux, Intel Xeon Gold 5118 CPU, 24 cores (12 cores per socket), 187 Gb
+
+| Test     | Measured Time | Parallel Speedup |
+|----------|---------------|------------------|
+| Local 1  | 21.245 s      | 1                |
+| Local 4  | 9.915 s      | 2.142            |
+| Local 8  | 7.018 s      | 3.03          |
+| Remote 1 | 16.12 s       | 1                |
+| Remote 4 | 7.05 s        | 2.28            |
+| Remote 8 | 6.18 s        | 2.61            |
+
+As seen above, the more number of processes we add, the faster the sample sort finishes. As seen above, on my local machine, the time taken to complete the sort was 21.245 seconds, compared to the one thread time of 16.12 seconds on the remote server. The speeds differ due to the processing power available to them. It is clear that while the speedup is much faster than that of the sample sort using processes, the amount of work that is constant, or the time acquired by using Amdahl’s law is higher than that of the sort done by processes. This could indicate that the time taken to create threads is greater than the time it takes to create processes. Overall, the speedup initially is extremely high, going at a rate of N/2 between 1 and 4 threads, however when we run the sort with 8 threads, the difference is not substantial. This could have been due to the fact that the amount of work done outside of the threads takes around 6-7 seconds to complete, or the lack of processing power available on my cpu.
+

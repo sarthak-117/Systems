@@ -1,0 +1,39 @@
+Sarthak and Audrey
+
+Note: our tests for frag and valgrind pass, but don't get checked on the server due to timeout!
+
+
+When compared to the hmalloc allocator from Hw 8, the optimized allocator runs faster. For list_main.c, an input size of 2500 takes 10 seconds to run using hmalloc.c, whereas it takes 0.13 seconds for it to run using optmalloc.c. This is a speed increase by a factor of approximately 78. Similarly, for ivec_main.c, the hmalloc.c code runs in 10 seconds with an input size of 6900. That size takes optmalloc.c 0.2 seconds to run. This is faster by a factor of 50.65.
+
++------------+-------+-------+
+|            | List  | Ivec  |  
++------------+-------+-------+
+| Input Size | 2500  | 6900  |  
++------------+-------+-------+
+| OPT        | 0.13  | 0.2   |
++------------+-------+-------+
+| HWX        | 10.19 | 10.13 | 
++------------+-------+-------+
+
+
+When compared to the system allocator, the optimized allocator runs much slower. For list_main.c, an input size of 3800 takes 10 seconds to run using optmalloc.c, whereas it takes 0.09 seconds for it to run using sysmalloc.c. This is slower by a factor of approximately 98. Similarly, for ivec_main.c, the optmalloc.c code runs in 10 seconds with an input size of 39000. That size takes sysmalloc.c 0.2 seconds to run. This is faster by a factor of 50.8.
+
++------------+------+-------+
+|            | List | Ivec  |
++------------+------+-------+
+| Input Size | 3800 | 39000 |
++------------+------+-------+
+| OPT        | 9.82 | 10.16 |
++------------+------+-------+
+| SYS        | 0.09 | 0.2   |
++------------+------+-------+
+
+
+In the optimized allocator, we were using the buckets technique. We had 7 buckets set up of different sizes that we rounded data sizes up to and created space for in 7 separate free_lists. The only problem we kept running into was running large inputs. Although it works for inputs up to thousands in size, we kept getting SYSKILL issues while running the code. Upon further investigation, we found that this was due to over allocation in memory, so we decided to take measures that would unmap pages that were completely empty. After we coalesced, if a node has size >= PAGE_SIZE, it would be unmapped. This was unfortunately not enough to fix this error. We expected that while coalescing, many pages would get merged together and then we could free them when they merge to a size past PAGE_SIZE but it did not seem like that had enough of an impact on large outputs. 
+
+To reuse memory, our allocator takes the data that is being freed if it is less than 2048 and it creates a free_block* node that gets inserted into the free_list (the sizes being freed are usually going to be powers of 2 if they were created using xmalloc). This freed memory is then coalesced, and as mentioned above, if nodes have a size >= PAGE_SIZE, they are munmapped. It isn’t enough to pass the tests with larger inputs due to overallocation of memory.
+
+I guess the biggest challenge we are running into would be the issues with overallocation of resources. Clearly, our times towards the end seemed to bottleneck and result in SYSKILLs and slower times than we anticipated for our code. It takes 0.13 seconds for an input size of 2500, but 10 seconds for an input of 3800 on list_main.c, which is a terrible slowdown caused solely by the lack of available memory. If we focused more on space instead of solely focusing on time, we would have been able to notice this earlier and have more safeguards in place to prevent errors such as this from happening.
+
+I think if I were to redo it, I would add more buckets, and also try using arenas. Our code was not fast enough even for smaller inputs when compared to sys_alloc. I think maybe using arenas as well having thread local storage would be able to solve our errors with space contention and speed as well.
+
